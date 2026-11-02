@@ -1,6 +1,6 @@
 # ZeKamu değerlendirme paketi (vize makalesi)
 
-Kurulum: `pip install -r requirements.txt`  (Groq anahtarı: `set GROQ_API_KEY=...`, kodda saklama)
+Kurulum: `pip install -r requirements.txt`  (API anahtarı: `set CEREBRAS_API_KEY=...`; Groq için `GROQ_API_KEY`; kodda saklama)
 
 Sıra:
 1. `python build_index.py --pdf-dir data_kurum --out index_bge --embedder BAAI/bge-m3`  (MiniLM için ikinci indeks de al; karşılaştır)
@@ -25,4 +25,16 @@ Colab defteri: `notebooks/revizyon_analizleri.ipynb` (API çağrısı yapmaz; me
 - `data_kurum/sample_manifest.csv`: rapor yılları (denetim yılı). Özgün manifest dosyası kaybolduğundan `results/ind.csv` içindeki yıllardan yeniden oluşturuldu; `python indicators.py --manifest data_kurum/sample_manifest.csv` bu yıllarla çalışır.
 - `results/ans/llm_cache.jsonl`: model yanıt önbelleği. Aynı (model, akıl yürütme düzeyi, istem) için API çağrısı yapmadan sonuçları yeniden üretir.
 - `results/ans/human_check_scored_nonblind.xlsx`: ilk insan puanlaması (hakem puanı görünür halde yapıldı; körleme yok). Kör yeniden puanlama: `results/revision_v2/`.
-- Anahtar: `GROQ_API_KEY` ortam değişkeni; kodda anahtar saklanmaz.
+- Anahtar: `CEREBRAS_API_KEY` (varsayılan sağlayıcı) veya `GROQ_API_KEY` ortam değişkeni; kodda anahtar saklanmaz.
+
+## Sağlayıcı ve önbellek (v1.1 notu)
+Makaledeki koşu **Cerebras** üzerinden, model `gpt-oss-120b`, sıcaklık 0, akıl yürütme çabası `low` ile yapılmıştır (`results/ans/summary.json`: `provider: cerebras`).
+`llm.py` v1.1'den itibaren sağlayıcı seçilebilir (`--provider cerebras|groq`, varsayılan `cerebras`) ve önbellek anahtarı
+`sha("sağlayıcı\nmodel\nçaba\nistem")` biçimindedir; kayıtlı `results/ans/llm_cache.jsonl` bu anahtarla birebir eşleşir
+(RAG'siz istemlerin 75/75'i ve kör değerlendirme havuzundaki RAG istemleri doğrulanmıştır). Böylece aynı komut API anahtarı olmadan
+kayıtlı yanıtları yeniden üretir. Groq ile koşmak için `--provider groq --model openai/gpt-oss-120b` verilmelidir; bu durumda
+anahtar farklı olacağından önbellek kullanılmaz ve çıktılar değişebilir.
+
+`results/ans/runs.jsonl` içindeki `contain` (içerir ölçütü; boşluk/NBSP ile ayrılmış binlik gruplarını da eşler), `abstained` (eski esnek çekimserlik)
+ve `abstained_strict` alanları koşu sonrası analizde eklenmiştir; güncel `eval_answers.py` bu alanları yazmaz. Düzeltilmiş çekimserlik tanımı
+`notebooks/revizyon_analizleri.ipynb` içinde tanımlıdır ve bu kayıtlı alanları okur.

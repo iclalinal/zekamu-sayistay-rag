@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 
 from common import (Retriever, bootstrap_ci, doc_key, exact_match, f1_score, load_gold, normalize_answer)
-from llm import ABSTAIN, Cache, GroqLLM, StubLLM, parse_json
+from llm import ABSTAIN, Cache, ChatLLM, StubLLM, parse_json
 
 PROMPT_VERSION = "v1"
 PROMPT_RAG = """Sen Sayıştay denetim raporlarını inceleyen bir asistansın.
@@ -71,8 +71,11 @@ def main() -> int:
     ap.add_argument("--split", choices=["dev", "test"], default=None)
     ap.add_argument("--conditions", nargs="+", default=["norag", "vector", "bm25", "hybrid"])
     ap.add_argument("--top-k", type=int, default=5)
-    ap.add_argument("--llm", choices=["groq", "stub"], default="groq")
-    ap.add_argument("--model", default="openai/gpt-oss-120b")
+    ap.add_argument("--llm", choices=["api", "groq", "stub"], default="api",
+                    help="api: OpenAI uyumlu uç nokta (--provider ile seçilir); groq: api ile aynı (eski ad)")
+    ap.add_argument("--provider", choices=["cerebras", "groq"], default="cerebras",
+                    help="makaledeki koşu: cerebras (model adı gpt-oss-120b); groq için --model openai/gpt-oss-120b")
+    ap.add_argument("--model", default="gpt-oss-120b")
     ap.add_argument("--judge-model", default=None, help="boşsa üretim modeli (öz-tercih yanlılığına dikkat)")
     ap.add_argument("--reasoning-effort", default="low", choices=["low", "medium", "high"],
                     help="gpt-oss için akıl yürütme düzeyi; düşük düzey token tüketimini azaltır")
@@ -93,8 +96,8 @@ def main() -> int:
     if args.llm == "stub":
         gen = judge = StubLLM()
     else:
-        gen = GroqLLM(args.model, cache, reasoning_effort=args.reasoning_effort)
-        judge = GroqLLM(args.judge_model, cache, reasoning_effort=args.reasoning_effort) \
+        gen = ChatLLM(args.model, cache, reasoning_effort=args.reasoning_effort, provider=args.provider)
+        judge = ChatLLM(args.judge_model, cache, reasoning_effort=args.reasoning_effort, provider=args.provider) \
             if args.judge_model else gen
 
     gold = load_gold(args.gold, args.split, args.include_unverified)
@@ -137,7 +140,7 @@ def main() -> int:
         for x in rows:
             f.write(json.dumps(x, ensure_ascii=False) + "\n")
 
-    summary = {"prompt_version": PROMPT_VERSION, "model": args.model, "judge_model": args.judge_model or args.model,
+    summary = {"prompt_version": PROMPT_VERSION, "model": args.model, "provider": args.provider, "judge_model": args.judge_model or args.model,
                "top_k": args.top_k, "split": args.split, "n_questions": len(gold),
                "index_meta": r.meta, "conditions": {}}
     print(f"{'koşul':8s} {'EM*':>6s} {'F1':>6s} {'F1s5':>6s} {'atıf':>6s} {'ground':>7s} {'çekim.(cevapsız)':>17s}")

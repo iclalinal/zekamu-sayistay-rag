@@ -1,0 +1,5 @@
+﻿id,condition,qtype,neden,contains,gold_answer,model_answer
+q009,hybrid,uzun,"eski=çekimser, düzeltilmiş=cevap verdi",False,İdare Faaliyet Raporu içerik olarak mevzuata uygun hazırlanmamıştır.,"İdarenin faaliyet raporu mevzuata uygun hazırlanmadı; Faaliyet Sonuçları Tablosu raporda yer almamaktadır. [Kaynak: l3g4BWPYKO-mugla-su-ve-kanalizasyon-idaresi-genel-mudurlugu.pdf, s. 20]"
+q019,hybrid,sayisal,"eski=çekimser, düzeltilmiş=cevap verdi",True,"2.581.987.551,74 TL","Belgelere göre, ek ve düşülen ödeneklerle ilgili bir bilgi yer almamaktadır; sadece mevcut ödenek toplamı 2.581.987.551,74 TL olarak verilmiştir. Bu nedenle istenen toplam ödenek tutarı belgelerde bulunamadı.  
+
+[Kaynak: ZkYq6mnoj3-eskisehir-teknik-universitesi.pdf, s. 12]"

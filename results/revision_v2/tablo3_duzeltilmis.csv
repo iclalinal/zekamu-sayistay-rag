@@ -1,0 +1,4 @@
+﻿Koşul,İsabet (n),İsabet içerir,İsabet çekimserlik (düz.),İsabet çekimserlik (eski),Iska (n),Iska içerir,Iska çekimserlik (düz.),Iska çekimserlik (eski)
+Vektör,53,"16/26 = 0,615","17/53 = 0,321",17/53,12,"0/6 = 0,000","8/12 = 0,667",8/12
+BM25,35,"15/18 = 0,833","9/35 = 0,257",9/35,30,"0/14 = 0,000","25/30 = 0,833",25/30
+Hibrit,49,"19/27 = 0,704","15/49 = 0,306",17/49,16,"0/5 = 0,000","15/16 = 0,938",15/16

@@ -1,7 +1,9 @@
-"""LLM istemcileri: Groq (OpenAI uyumlu uç nokta), önbellekli; test için StubLLM.
+"""LLM istemcileri: OpenAI uyumlu uç noktalar (Cerebras varsayılan, Groq seçenek), önbellekli; test için StubLLM.
 
-GROQ_API_KEY ortam değişkeni gerekir (.env dosyasını kendin yükle: `set GROQ_API_KEY=...`).
-Aynı (model, istem) çifti önbellekten gelir, bu yüzden bir koşu yarıda kesilirse kaldığı yerden sürer.
+Anahtar ortam değişkeni: CEREBRAS_API_KEY veya GROQ_API_KEY (.env dosyasını kendin yükle: `set CEREBRAS_API_KEY=...`).
+Aynı (sağlayıcı, model, akıl yürütme çabası, istem) dörtlüsü önbellekten gelir, bu yüzden bir koşu yarıda kesilirse kaldığı yerden sürer.
+Önbellek anahtarı: sha("sağlayıcı\nmodel\nçaba\nistem"); makaledeki koşunun önbelleği (results/ans/llm_cache.jsonl) bu biçimdedir
+(sağlayıcı=cerebras, model=gpt-oss-120b, çaba=low).
 """
 from __future__ import annotations
 
@@ -13,7 +15,11 @@ from pathlib import Path
 
 from common import sha
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+PROVIDERS = {
+    "cerebras": ("https://api.cerebras.ai/v1/chat/completions", "CEREBRAS_API_KEY"),
+    "groq": ("https://api.groq.com/openai/v1/chat/completions", "GROQ_API_KEY"),
+}
+GROQ_URL = PROVIDERS["groq"][0]   # geriye dönük uyumluluk
 ABSTAIN = "Belgelerde bu bilgi bulunamadı."
 
 
@@ -37,20 +43,24 @@ class Cache:
             f.write(json.dumps({"k": k, "v": v}, ensure_ascii=False) + "\n")
 
 
-class GroqLLM:
+class ChatLLM:
     def __init__(self, model: str, cache: Cache, sleep: float = 0.5, reasoning_effort: str | None = None,
-                 max_tokens: int = 1024, retries: int = 40):
+                 max_tokens: int = 1024, retries: int = 40, provider: str = "cerebras"):
         import requests
 
         self.requests = requests
         self.model, self.cache, self.sleep = model, cache, sleep
         self.reasoning_effort, self.max_tokens, self.retries = reasoning_effort, max_tokens, retries
-        self.key = os.environ.get("GROQ_API_KEY")
+        if provider not in PROVIDERS:
+            raise SystemExit(f"HATA: bilinmeyen sağlayıcı {provider!r}; seçenekler: {list(PROVIDERS)}")
+        self.provider = provider
+        self.url, env = PROVIDERS[provider]
+        self.key = os.environ.get(env)
         if not self.key:
-            raise SystemExit("HATA: GROQ_API_KEY tanımlı değil")
+            raise SystemExit(f"HATA: {env} tanımlı değil")
 
     def complete(self, prompt: str) -> str:
-        k = sha(f"{self.model}\n{self.reasoning_effort}\n{prompt}")
+        k = sha(f"{self.provider}\n{self.model}\n{self.reasoning_effort}\n{prompt}")
         hit = self.cache.get(k)
         if hit is not None:
             return hit
@@ -59,7 +69,7 @@ class GroqLLM:
         if self.reasoning_effort:
             payload["reasoning_effort"] = self.reasoning_effort
         for attempt in range(self.retries):
-            resp = self.requests.post(GROQ_URL, json=payload, timeout=120,
+            resp = self.requests.post(self.url, json=payload, timeout=120,
                                       headers={"Authorization": f"Bearer {self.key}"})
             if resp.status_code == 200:
                 text = (resp.json()["choices"][0]["message"].get("content") or "").strip()
@@ -119,3 +129,6 @@ def parse_json(text: str) -> dict | None:
         return json.loads(m.group(0))
     except json.JSONDecodeError:
         return None
+
+
+GroqLLM = ChatLLM   # eski ad (geriye dönük uyumluluk)
