@@ -1,0 +1,4 @@
+id,question,answer,gold_doc,gold_pages,answerable,qtype,split,verified
+q001,2023 yılı denetim raporunda toplam kaç bulgu yer almaktadır?,12,ORNEK_RAPOR_2023.pdf,14,1,sayisal,dev,0
+q002,Kurumun hedef tutarı nedir?,500 milyon TL,ORNEK_RAPOR_2023.pdf,"22-23",1,sayisal,test,0
+q003,Bu raporda Mars'taki ofis kirası kaç liradır?,,,,0,kisa,test,0

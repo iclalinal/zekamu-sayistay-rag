@@ -1,0 +1,50 @@
+{
+  "prompt_version": "v1",
+  "model": "gpt-oss-120b",
+  "provider": "cerebras",
+  "judge_model": "gpt-oss-120b",
+  "top_k": 5,
+  "split": "dev",
+  "n_questions": 35,
+  "index_meta": {
+    "embedder": "BAAI/bge-m3",
+    "chunk_size": 1000,
+    "overlap": 150,
+    "splitter": "langchain_RecursiveCharacterTextSplitter",
+    "n_docs": 88,
+    "n_pages": 3714,
+    "n_chunks": 8448,
+    "dim": 1024,
+    "versions": {
+      "python": "3.13.16",
+      "numpy": "2.1.3",
+      "fitz": "2.0",
+      "sentence_transformers": "5.7.0",
+      "langchain_text_splitters": "var",
+      "sklearn": "1.6.1"
+    }
+  },
+  "conditions": {
+    "hybrid": {
+      "n_answerable": 30,
+      "n_unanswerable": 5,
+      "em_short": 0.0,
+      "em_short_n": 11,
+      "contain_short": 0.8181818181818182,
+      "contain_all_answerable": 0.43333333333333335,
+      "f1": 0.40471103348385606,
+      "f1_ci95": [
+        0.3051015094727806,
+        0.5048243625876934
+      ],
+      "f1_stem5": 0.44715860450144385,
+      "cite_any_correct": 0.7333333333333333,
+      "cite_precision": 0.88,
+      "grounded": 1.0,
+      "grounded_all_answerable": 0.9333333333333333,
+      "abstain_rate_unanswerable": 1.0,
+      "abstain_rate_unanswerable_strict": 0.6,
+      "wrong_abstain_rate_answerable": 0.23333333333333334
+    }
+  }
+}
